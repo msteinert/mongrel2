@@ -99,13 +99,13 @@ static ssize_t plain_stream_file(IOBuf *iob, int fd, off_t len)
         check_debug(sent > 0, "Client closed probably during sendfile on socket: %d from "
                     "file %d", conn_fd, fd);
     }
-    
+
     check(total <= len,
-            "Wrote way too much, wrote %d but size was %zd",
+            "Wrote way too much, wrote %d but size was %jd",
             (int)total, len);
 
     check(total == len,
-            "Sent other than expected, sent: %d, but expected: %zd", 
+            "Sent other than expected, sent: %d, but expected: %jd", 
             (int)total, len);
 
     return total;
@@ -192,13 +192,13 @@ static ssize_t ssl_stream_file(IOBuf *iob, int fd, off_t len)
 
         check(Register_write(iob->fd, sent) != -1, "Failed to record write, must have died.");
     }
-    
+
     check(total <= len,
-            "Wrote way too much, wrote %d but size was %zd",
+            "Wrote way too much, wrote %d but size was %jd",
             (int)total, len);
 
     check(total == len,
-            "Sent other than expected, sent: %d, but expected: %zd", 
+            "Sent other than expected, sent: %d, but expected: %jd",
             (int)total, len);
 
     return total;

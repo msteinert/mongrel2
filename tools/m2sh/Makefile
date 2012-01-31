@@ -1,4 +1,5 @@
-CFLAGS=-DNDEBUG -DNO_LINENOS -pthread -g -I../../src -Isrc -Wall $(OPTFLAGS)
+CPPFLAGS+=-I../../src -Isrc
+CFLAGS+=-DNDEBUG -DNO_LINENOS -pthread -g -Wall $(OPTFLAGS)
 LIBS=-lzmq -lsqlite3 ../../build/libm2.a $(OPTLIBS)
 
 PREFIX?=/usr/local
@@ -9,7 +10,10 @@ TESTS=$(patsubst %.c,%,${TEST_SRC})
 LIB_SRC=$(filter-out src/m2sh.c,${SOURCES})
 LIB_OBJ=$(filter-out src/m2sh.o,${OBJECTS})
 
-all: ../lemon/lemon tests build/m2sh
+RANLIB=ranlib
+
+all: ../lemon/lemon build/m2sh
+all-tests: all tests
 
 dev: CFLAGS=-g -Wall -Wextra -Isrc -I../../src $(OPTFLAGS)
 dev: all
@@ -19,12 +23,12 @@ install: build/m2sh
 
 build/libm2sh.a: ${LIB_OBJ}
 	mkdir -p build
-	ar rcs $@ ${LIB_OBJ}
-	ranlib $@
+	$(AR) rcs $@ ${LIB_OBJ}
+	$(RANLIB) $@
 
 build/m2sh: ../lemon/lemon ../../build/libm2.a build/libm2sh.a src/m2sh.o
 	mkdir -p build
-	$(CC) $(CFLAGS) -o build/m2sh src/m2sh.o build/libm2sh.a ../../build/libm2.a $(LIBS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o build/m2sh src/m2sh.o build/libm2sh.a ../../build/libm2.a $(LDFLAGS) $(LIBS)
 
 ../lemon/lemon: ../lemon/lemon.c
 	$(CC) -O2 ../lemon/lemon.c -o ../lemon/lemon
@@ -39,7 +43,7 @@ tests: build/libm2sh.a ${TESTS}
 	ragel -G2 $<
 
 $(TESTS): %: %.c build/libm2sh.a
-	$(CC) $(CFLAGS) -o $@ $< build/libm2sh.a ../../build/libm2.a $(LIBS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< build/libm2sh.a ../../build/libm2.a $(LDFLAGS) $(LIBS)
 
 ../../build/libm2.a:
 	cd ../.. && make clean all

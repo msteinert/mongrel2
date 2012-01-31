@@ -94,10 +94,11 @@ void Parse_print_error(const char *message, bstring content, int at, int line_nu
     }
 }
 
-tst_t *Parse_config_string(bstring content) 
+tst_t *Parse_config_string(bstring content)
 {
     Token *temp = NULL;
     void *parser = ParseAlloc(malloc);
+    char *ts = NULL;
     check_mem(parser);
     ParserState state = {.settings = NULL, .error = 0, .line_number = 1};
 
@@ -106,7 +107,6 @@ tst_t *Parse_config_string(bstring content)
     char *eof = pe;
     int cs = -1;
     int act = -1;
-    char *ts = NULL;
     char *te = NULL;
 
     
@@ -372,7 +372,7 @@ case 7:
 
 
     if(state.error) {
-        Parse_print_error("SYNTAX ERROR", content, 
+        Parse_print_error("SYNTAX ERROR", content,
                 (int)(ts - bdata(content)), ++state.line_number);
     } else if( cs == 
 #line 379 "src/lexer.c"
@@ -398,7 +398,7 @@ case 7:
 
 error:
     if(state.error) {
-        Parse_print_error("SYNTAX ERROR", content, 
+        Parse_print_error("SYNTAX ERROR", content,
                 (int)(ts - bdata(content)), ++state.line_number);
     }
     ParseFree(parser, free);

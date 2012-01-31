@@ -35,6 +35,11 @@
 #define NEEDARMMAKECONTEXT
 #endif
 
+#if defined(__linux__) && defined(__mips__)
+#define NEEDSWAPCONTEXT
+#define NEEDMIPSMAKECONTEXT
+#endif
+
 #ifdef NEEDPOWERMAKECONTEXT
 void makecontext(ucontext_t *ucp, void (*func)(void), int argc, ...)
 {
@@ -42,7 +47,7 @@ void makecontext(ucontext_t *ucp, void (*func)(void), int argc, ...)
     va_list arg;
 
     tos = (ulong*)ucp->uc_stack.ss_sp+ucp->uc_stack.ss_size/sizeof(ulong);
-    sp = tos - 16;    
+    sp = tos - 16;
     ucp->mc.pc = (long)func;
     ucp->mc.sp = (long)sp;
     va_start(arg, argc);
@@ -94,10 +99,10 @@ void makecontext(ucontext_t *uc, void (*fn)(void), int argc, ...)
 {
     int i, *sp;
     va_list arg;
-    
+
     sp = (int*)uc->uc_stack.ss_sp+uc->uc_stack.ss_size/4;
     va_start(arg, argc);
-    
+
     if(argc-- > 0) uc->uc_mcontext.arm_r0 = va_arg(arg, uint);
     if(argc-- > 0) uc->uc_mcontext.arm_r1 = va_arg(arg, uint);
     if(argc-- > 0) uc->uc_mcontext.arm_r2 = va_arg(arg, uint);
@@ -106,6 +111,23 @@ void makecontext(ucontext_t *uc, void (*fn)(void), int argc, ...)
     va_end(arg);
     uc->uc_mcontext.arm_sp = (uint)sp;
     uc->uc_mcontext.arm_lr = (uint)fn;
+}
+#endif
+
+#ifdef NEEDMIPSMAKECONTEXT
+void
+makecontext(ucontext_t *uc, void (*fn)(void), int argc, ...)
+{
+    int i, *sp;
+    va_list arg;
+
+    va_start(arg, argc);
+    sp = (int*)uc->uc_stack.ss_sp+uc->uc_stack.ss_size/4;
+    for(i=0; i<4 && i<argc; i++)
+        uc->uc_mcontext.mc_regs[i+4] = va_arg(arg, int);
+    va_end(arg);
+    uc->uc_mcontext.mc_regs[29] = (int)sp;
+    uc->uc_mcontext.mc_regs[31] = (int)fn;
 }
 #endif
 

@@ -11,7 +11,7 @@
 
 #define USE_UCONTEXT 1
 
-#if defined(__OpenBSD__)
+#if defined(__OpenBSD__) || defined(__mips__)
 #undef USE_UCONTEXT
 #define USE_UCONTEXT 0
 #endif
@@ -109,6 +109,14 @@ int getmcontext(mcontext_t*);
 void setmcontext(const mcontext_t*);
 #define    setcontext(u)    setmcontext((void *)&((u)->uc_mcontext.arm_r0))
 #define    getcontext(u)    getmcontext((void *)&((u)->uc_mcontext.arm_r0))
+#endif
+
+#if defined(__mips__)
+#include "mips-ucontext.h"
+int getmcontext(mcontext_t*);
+void setmcontext(const mcontext_t*);
+#define    setcontext(u)    setmcontext(&(u)->uc_mcontext)
+#define    getcontext(u)    getmcontext(&(u)->uc_mcontext)
 #endif
 
 typedef struct Context Context;

@@ -36,6 +36,7 @@
 #define _unixy_h
 
 #include <bstring.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 int Unixy_chroot(bstring path);

@@ -150,10 +150,9 @@ int Mimetypes_load(tst_t *settings, Pair *pair)
 {
     const char *ext = bdata(Pair_key(pair));
     Value *val = Pair_value(pair);
+    tns_value_t *res = NULL;
     check(val, "Error loading Mimetype %s", bdata(Pair_key(pair)));
 
-    tns_value_t *res = NULL;
-    
     res = DB_exec(bdata(&MIMETYPE_SQL),
             ext, ext, bdata(val->as.string->data));
 
@@ -172,10 +171,9 @@ int Settings_load(tst_t *settings, Pair *pair)
 {
     const char *name = bdata(Pair_key(pair));
     Value *val = Pair_value(pair);
+    tns_value_t *res = NULL;
     check(val, "Error loading Setting %s", bdata(Pair_key(pair)));
 
-    tns_value_t *res = NULL;
-    
     res = DB_exec(bdata(&SETTING_SQL), name, bdata(val->as.string->data));
 
     check(res != NULL, "Failed to add setting: %s=%s",
@@ -237,9 +235,9 @@ struct tagbstring MATCHING_PARAM = bsStatic("matching");
 
 int Host_load(tst_t *settings, Value *val)
 {
+    tns_value_t *res = NULL;
     CONFIRM_TYPE("Host");
     Class *cls = val->as.cls;
-    tns_value_t *res = NULL;
     struct tagbstring ROUTES_VAR = bsStatic("routes");
 
     const char *name = AST_str(settings, cls->params, "name", VAL_QSTRING);
@@ -274,9 +272,9 @@ struct tagbstring USE_SSL = bsStatic("use_ssl");
 
 int Server_load(tst_t *settings, Value *val)
 {
+    tns_value_t *res = NULL;
     CONFIRM_TYPE("Server");
     Class *cls = val->as.cls;
-    tns_value_t *res = NULL;
     struct tagbstring HOSTS_VAR = bsStatic("hosts");
     const char *bind_addr = NULL;
     const char *use_ssl = NULL;

@@ -1,4 +1,5 @@
-CFLAGS=-g -O2 -Wall -Wextra -Isrc -pthread -rdynamic -DNDEBUG $(OPTFLAGS) -D_FILE_OFFSET_BITS=64
+CPPFLAGS+=-Isrc
+CFLAGS+=-g -O2 -Wall -Wextra -pthread -rdynamic -DNDEBUG $(OPTFLAGS) -D_FILE_OFFSET_BITS=64
 LIBS=-lzmq -ldl -lsqlite3 $(OPTLIBS)
 PREFIX?=/usr/local
 
@@ -16,9 +17,13 @@ TEST_SRC=$(wildcard tests/*_tests.c)
 TESTS=$(patsubst %.c,%,${TEST_SRC})
 MAKEOPTS=OPTFLAGS="${NOEXTCFLAGS} ${OPTFLAGS}" OPTLIBS="${OPTLIBS}" LIBS="${LIBS}" DESTDIR="${DESTDIR}" PREFIX="${PREFIX}"
 
-all: bin/mongrel2 tests m2sh
+RANLIB=ranlib
 
-dev: CFLAGS=-g -Wall -Isrc -Wall -Wextra $(OPTFLAGS) -D_FILE_OFFSET_BITS=64
+all: bin/mongrel2 m2sh
+all-tests: all tests
+
+dev: CPPFLAGS+=-Isrc
+dev: CFLAGS+=-g -Wall -Wall -Wextra $(OPTFLAGS) -D_FILE_OFFSET_BITS=64
 dev: all
 
 ${OBJECTS_NOEXT}: CFLAGS += ${NOEXTCFLAGS}
@@ -26,12 +31,12 @@ ${OBJECTS_NOEXT}: CFLAGS += ${NOEXTCFLAGS}
 
 
 bin/mongrel2: build/libm2.a src/mongrel2.o
-	$(CC) $(CFLAGS) src/mongrel2.o -o $@ $< $(LIBS)
+	$(CC) $(CFLAGS) src/mongrel2.o -o $@ $< $(LDFLAGS) $(LIBS)
 
 build/libm2.a: CFLAGS += -fPIC
 build/libm2.a: build ${LIB_OBJ}
-	ar rcs $@ ${LIB_OBJ}
-	ranlib $@
+	$(AR) rcs $@ ${LIB_OBJ}
+	$(RANLIB) $@
 
 build:
 	@mkdir -p build
@@ -71,7 +76,7 @@ tests/config.sqlite: src/config/config.sql src/config/example.sql src/config/mim
 	sqlite3 $@ < src/config/mimetypes.sql
 
 $(TESTS): %: %.c build/libm2.a
-	$(CC) $(CFLAGS) -o $@ $< build/libm2.a $(LIBS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< build/libm2.a $(LDFLAGS) $(LIBS)
 
 src/state.c: src/state.rl src/state_machine.rl
 src/http11/http11_parser.c: src/http11/http11_parser.rl
@@ -113,7 +118,7 @@ valgrind:
 	valgrind --leak-check=full --show-reachable=yes --log-file=valgrind.log --suppressions=tests/valgrind.sup ./bin/mongrel2 tests/config.sqlite localhost
 
 %.o: %.S
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 coverage: NOEXTCFLAGS += -fprofile-arcs -ftest-coverage
 coverage: LIBS += -lgcov
